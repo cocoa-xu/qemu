@@ -177,6 +177,22 @@ static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const int b)
 #endif
 }
 
+static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_addr_t a, const int b) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a - b;
+#else
+    _cc_length_t result;
+    result.low = a - b;
+
+    if (a < b) {
+        result.high = 1;
+    } else {
+        result.high = 0;
+    }
+    return result;
+#endif
+}
+
 static inline _cc_length_t _cc_N(cc_length_sleft)(const _cc_length_t a, const uint64_t shift) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a << shift;
@@ -200,6 +216,17 @@ static inline _cc_length_t _cc_N(cc_length_bitor)(const _cc_length_t a, const ui
     _cc_length_t result;
     result.low = a.low | b;
     result.high = a.high;
+    return result;
+#endif
+}
+
+static inline _cc_length_t _cc_N(cc_length_bitand)(const _cc_length_t a, const _cc_length_t b) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a & b;
+#else
+    _cc_length_t result;
+    result.low = a.low & b.low;
+    result.high = a.high & b.high;
     return result;
 #endif
 }
@@ -443,16 +470,20 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
 
     // base : CapLenBits = truncate((a_top + correction_base) @ c.B @ zeros(E), cap_len_width);
     _cc_length_t base = _cc_N(cc_length_add)(a_top, correction_base);
-    base = _cc_N(cc_length_sleft)(base,_CC_MANTISSA_WIDTH);
-    base = _cc_N(cc_length_bitor)(base,bounds.B);
-    base = _cc_N(cc_length_sleft)(base,E);
+    base = _cc_N(cc_length_sleft)(base, _CC_MANTISSA_WIDTH);
+    base = _cc_N(cc_length_bitor)(base, bounds.B);
+    base = _cc_N(cc_length_sleft)(base, E);
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     base &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
 #else
-    _cc_length_t temp;
-    temp.low=1;
-    temp.high=0;
-    base &= _cc_N(cc_length_sleft)(temp,_CC_MANTISSA_WIDTH) - 1;
+    {
+        _cc_length_t temp;
+        temp.low = 1;
+        temp.high = 0;
+        temp = _cc_N(cc_length_sleft)(temp, _CC_MANTISSA_WIDTH);
+        temp = _cc_N(cc_length_sub)(temp, 1);
+        base = _cc_N(cc_length_bitand)(base, temp);
+    }
 #endif
     _cc_debug_assert((_cc_addr_t)(base >> _CC_ADDR_WIDTH) <= 1); // max 65/33 bits
     // top  : truncate((a_top + correction_top)  @ c.T @ zeros(E), cap_len_width);
@@ -464,10 +495,21 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     top.low = tmp;
     top.high = 0;
 #endif
-    top = _cc_N(cc_length_sleft)(top,_CC_MANTISSA_WIDTH);
-    top = _cc_N(cc_length_bitor)(top,bounds.T);
-    top = _cc_N(cc_length_sleft)(top,E);
+    top = _cc_N(cc_length_sleft)(top, _CC_MANTISSA_WIDTH);
+    top = _cc_N(cc_length_bitor)(top, bounds.T);
+    top = _cc_N(cc_length_sleft)(top, E);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     top &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
+#else
+    {
+        _cc_length_t temp;
+        temp.low = 1;
+        temp.high = 0;
+        temp = _cc_N(cc_length_sleft)(temp, _CC_LEN_WIDTH);
+        temp = _cc_N(cc_length_sub)(temp, 1);
+        top = _cc_N(cc_length_bitand)(top, temp);
+    }
+#endif
     _cc_debug_assert((_cc_addr_t)(top >> _CC_ADDR_WIDTH) <= 1); // max 65 bits
 
     /* If the base and top are more than an address space away from each other,

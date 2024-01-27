@@ -58,8 +58,20 @@
 #define CC128_SPECIAL_OTYPE_VAL_SIGNED(subtract) (((int64_t)-1) - subtract##u)
 
 /* Use __uint128 to represent 65 bit length */
+#ifdef __LP64__
 __extension__ typedef unsigned __int128 cc128_length_t;
 __extension__ typedef signed __int128 cc128_offset_t;
+#else
+typedef struct {
+    uint64_t low;
+    uint64_t high;
+} cc128_length_t;
+typedef struct {
+    int64_t low;
+    int64_t high;
+};
+ cc128_offset_t;
+#endif
 typedef uint64_t cc128_addr_t;
 typedef int64_t cc128_saddr_t;
 #include "cheri_compressed_cap_macros.h"

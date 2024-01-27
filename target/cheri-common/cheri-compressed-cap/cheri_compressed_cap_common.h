@@ -161,6 +161,17 @@ struct _cc_N(cap) {
 #endif
 };
 
+static inline _cc_length_t _cc_N(cc_length_add)(const _cc_length_t a, const _cc_length_t b) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a + b;
+#else
+    _cc_length_t result;
+    result.low = a.low + b.low;
+    result.high = a.high + b.high + (result.low < a.low);
+    return result;
+#endif
+}
+
 static inline bool _cc_N(test_cc_length_equal)(const _cc_length_t a, const _cc_length_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a == b;
@@ -399,7 +410,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     _cc_addr_t a_top = a_top_shift >= _CC_ADDR_WIDTH ? 0 : cursor >> a_top_shift;
 
     // base : CapLenBits = truncate((a_top + correction_base) @ c.B @ zeros(E), cap_len_width);
-    _cc_length_t base = (_cc_addr_t)((int64_t)a_top + correction_base);
+    _cc_length_t base = _cc_N(cc_length_add)(a_top, correction_base);
     base <<= _CC_MANTISSA_WIDTH;
     base |= bounds.B;
     base <<= E;

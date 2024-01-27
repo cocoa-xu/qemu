@@ -719,7 +719,11 @@ static inline uint32_t _cc_N(compute_ebt)(_cc_addr_t req_base, _cc_length_t req_
     //     MW - 1 bits because those are handled by the ie = 0 format. */
     //  let e = 52 - CountLeadingZeros(length[64..13]);
     uint8_t E = (uint8_t)_cc_N(get_exponent)(req_length65);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     const uint64_t req_length64 = (uint64_t)req_length65;
+#else
+    const uint64_t req_length64 = req_length65.low;
+#endif
     // Use internal exponent if e is non-zero or if e is zero but
     // but the implied bit of length is not zero (denormal vs. normal case)
     //  let ie = (e != 0) | length[12];
@@ -765,7 +769,11 @@ static inline uint32_t _cc_N(compute_ebt)(_cc_addr_t req_base, _cc_length_t req_
     //    lostSignificantTop = (top & maskLo) != z65;
     // TODO: stop using _cc_length_t and just handle bit65 set specially?
     const _cc_length_t maskLo = (((_cc_length_t)1u) << (E + _CC_EXP_LOW_WIDTH)) - 1;
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     const _cc_length_t zero65 = 0;
+#else
+    const _cc_length_t zero65 = {0, 0};
+#endif
     bool lostSignificantBase = (req_base & maskLo) != zero65;
     bool lostSignificantTop = (req_top & maskLo) != zero65;
     //    if lostSignificantTop then {

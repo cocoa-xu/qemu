@@ -161,22 +161,22 @@ struct _cc_N(cap) {
 #endif
 };
 
+static inline bool _cc_N(test_cc_length_equal)(const _cc_length_t a, const _cc_length_t b) {
+#ifdef __LP64__
+    return a == b;
+#else
+    return a.low == b.low && a.high == b.high;
+#endif
+}
+
 static inline bool _cc_N(exactly_equal)(const _cc_cap_t* a, const _cc_cap_t* b) {
     return a->cr_tag == b->cr_tag && a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt;
 }
 
 static inline bool _cc_N(raw_equal)(const _cc_cap_t* a, const _cc_cap_t* b) {
-#ifdef __LP64__
-    return a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt && a->_cr_top == b->_cr_top &&
+    return a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt && _ccN(test_cc_length_equal)(a->_cr_top, b->_cr_top) &&
            a->cr_base == b->cr_base && a->cr_tag == b->cr_tag && a->cr_bounds_valid == b->cr_bounds_valid &&
            a->cr_exp == b->cr_exp && a->cr_extra == b->cr_extra;
-#else
-    return a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt &&
-           a->_cr_top.low == b->_cr_top.low &&
-           a->_cr_top.high == b->_cr_top.high &&
-           a->cr_base == b->cr_base && a->cr_tag == b->cr_tag && a->cr_bounds_valid == b->cr_bounds_valid &&
-           a->cr_exp == b->cr_exp && a->cr_extra == b->cr_extra;
-#endif
 }
 
 /* Returns the index of the most significant bit set in x */

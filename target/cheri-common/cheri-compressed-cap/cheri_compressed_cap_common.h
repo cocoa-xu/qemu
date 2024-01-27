@@ -166,8 +166,13 @@ static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const _cc_le
     return a + b;
 #else
     _cc_length_t result;
-    result.low = a.low + b.low;
-    result.high = a.high + b.high + (result.low < a.low);
+    result.low = a + b;
+
+    if ((UINT64_MAX - a) < b) {
+        result.high = 1;
+    } else {
+        result.high = 0;
+    }
     return result;
 #endif
 }

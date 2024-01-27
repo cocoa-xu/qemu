@@ -454,7 +454,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     // top  : truncate((a_top + correction_top)  @ c.T @ zeros(E), cap_len_width);
     _cc_addr_t tmp = (int64_t)a_top + correction_top;
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
-    _cc_length_t top = (_cc_addr_t)((int64_t)a_top + correction_top);
+    _cc_length_t top = tmp;
 #else
     _cc_length_t top;
     top.low = tmp;

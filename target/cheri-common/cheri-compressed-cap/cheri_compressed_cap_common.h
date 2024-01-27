@@ -422,7 +422,14 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     base &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
     _cc_debug_assert((_cc_addr_t)(base >> _CC_ADDR_WIDTH) <= 1); // max 65/33 bits
     // top  : truncate((a_top + correction_top)  @ c.T @ zeros(E), cap_len_width);
+    _cc_addr_t tmp = (int64_t)a_top + correction_top;
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     _cc_length_t top = (_cc_addr_t)((int64_t)a_top + correction_top);
+#else
+    _cc_length_t top;
+    top.low = tmp;
+    top.high = 0;
+#endif
     top <<= _CC_MANTISSA_WIDTH;
     top |= bounds.T;
     top <<= E;

@@ -220,7 +220,7 @@ static inline _cc_length_t _cc_N(cc_length_bor)(const _cc_length_t a, const uint
 #endif
 }
 
-static inline _cc_length_t _cc_N(cc_length_bitand)(const _cc_length_t a, const _cc_length_t b) {
+static inline _cc_length_t _cc_N(cc_length_band)(const _cc_length_t a, const _cc_length_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a & b;
 #else
@@ -482,7 +482,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
         temp.high = 0;
         temp = _cc_N(cc_length_lshift)(temp, _CC_MANTISSA_WIDTH);
         temp = _cc_N(cc_length_sub)(temp, 1);
-        base = _cc_N(cc_length_bitand)(base, temp);
+        base = _cc_N(cc_length_band)(base, temp);
     }
 #endif
     _cc_debug_assert((_cc_addr_t)(base >> _CC_ADDR_WIDTH) <= 1); // max 65/33 bits
@@ -507,7 +507,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
         temp.high = 0;
         temp = _cc_N(cc_length_lshift)(temp, _CC_LEN_WIDTH);
         temp = _cc_N(cc_length_sub)(temp, 1);
-        top = _cc_N(cc_length_bitand)(top, temp);
+        top = _cc_N(cc_length_band)(top, temp);
     }
 #endif
     _cc_debug_assert((_cc_addr_t)(top >> _CC_ADDR_WIDTH) <= 1); // max 65 bits

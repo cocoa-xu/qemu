@@ -228,7 +228,11 @@ static inline uint32_t _cc_N(get_exponent)(_cc_length_t length) {
     if (_cc_N(test_cc_length_gt_u64)(length, _CC_MAX_ADDR)) {
         return _CC_LEN_WIDTH - (bwidth - 1);
     } else {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
         return _cc_N(compute_e)((_cc_addr_t)length, bwidth);
+#else
+        return _cc_N(compute_e)((_cc_addr_t)length.low, bwidth);
+#endif
     }
 }
 

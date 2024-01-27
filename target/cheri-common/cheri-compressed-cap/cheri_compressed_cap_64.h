@@ -58,8 +58,6 @@
 #define CC64_SPECIAL_OTYPE_VAL_SIGNED(subtract) (((int64_t)-1) - subtract##u)
 
 /* Use uint64_t to represent 33 bit length */
-#define CC_LENGTH_TYPE 0
-#define CC_OFFSET_TYPE 0
 typedef uint64_t cc64_length_t;
 typedef int64_t cc64_offset_t;
 typedef uint32_t cc64_addr_t;

@@ -82,13 +82,9 @@
 
 /* Use __uint128 to represent 65 bit length */
 #ifdef __LP64__
-#define CC_LENGTH_TYPE 0
-#define CC_OFFSET_TYPE 0
 __extension__ typedef unsigned __int128 cc128_length_t;
 __extension__ typedef signed __int128 cc128_offset_t;
 #else
-#define CC_LENGTH_TYPE 1
-#define CC_OFFSET_TYPE 1
 typedef struct {
     uint64_t low;
     uint64_t high;

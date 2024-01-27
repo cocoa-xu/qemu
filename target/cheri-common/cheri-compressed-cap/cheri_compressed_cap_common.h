@@ -686,7 +686,7 @@ static inline bool _cc_N(is_representable_cap_exact)(const _cc_cap_t* cap) {
     _cc_debug_assert(decompressed_cap._cr_cursor == cap->_cr_cursor);
     _cc_debug_assert(decompressed_cap.cr_pesbt == cap->cr_pesbt);
     // If any of these fields changed then the capability is not representable:
-    if (decompressed_cap.cr_base != cap->cr_base || decompressed_cap._cr_top != cap->_cr_top) {
+    if (decompressed_cap.cr_base != cap->cr_base || !_cc_N(test_cc_length_equal)(decompressed_cap._cr_top, cap->_cr_top)) {
         return false;
     }
     return true;

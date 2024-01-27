@@ -38,6 +38,8 @@
 #include <string.h>
 #include <sysexits.h>
 
+#include "cheri_compatibility_32.h"
+
 #include "cheri_compressed_cap.h"
 // #include "cheri_compressed_cap.h"
 #ifdef DECOMPRESS_WITH_SAIL_GENERATED_CODE
@@ -61,10 +63,20 @@ static void dump_cap_fields(const cc128_cap_t* result) {
     fprintf(stderr, "Base:        0x%016" PRIx64 "\n", result->cr_base);
     fprintf(stderr, "Offset:      0x%016" PRIx64 "\n", result->_cr_cursor - result->cr_base);
     fprintf(stderr, "Cursor:      0x%016" PRIx64 "\n", result->_cr_cursor);
+#ifdef __LP64__
     cc128_length_t length = result->_cr_top - result->cr_base;
+#else
+    cc128_length_t length;
+    SUBTRACT_128BIT(length, result->_cr_top, result->cr_base);
+#endif
     fprintf(stderr, "Length:     0x%" PRIx64 "%016" PRIx64 " %s\n", (uint64_t)(length >> 64), (uint64_t)length,
             length > UINT64_MAX ? " (greater than UINT64_MAX)" : "");
+#ifdef __LP64__
     cc128_length_t top_full = result->_cr_top;
+#else
+    cc128_length_t top_full;
+    ASSIGN_128BIT(top_full, result->_cr_top);
+#endif
     fprintf(stderr, "Top:        0x%" PRIx64 "%016" PRIx64 " %s\n", (uint64_t)(top_full >> 64), (uint64_t)top_full,
             top_full > UINT64_MAX ? " (greater than UINT64_MAX)" : "");
     fprintf(stderr, "Sealed:      %d\n", cc128_is_cap_sealed(result) ? 1 : 0);

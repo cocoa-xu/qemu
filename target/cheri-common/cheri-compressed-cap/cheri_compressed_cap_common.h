@@ -187,7 +187,7 @@ static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_length_t a, const int 
         result.high -= 1;
     }
     result.low = a.low - b;
-    
+
     return result;
 #endif
 }
@@ -242,6 +242,17 @@ static inline _cc_length_t _cc_N(cc_length_band)(const _cc_length_t a, const _cc
     _cc_length_t result;
     result.low = a.low & b.low;
     result.high = a.high & b.high;
+    return result;
+#endif
+}
+
+static inline _cc_length_t _cc_N(cc_length_bxor)(const _cc_length_t a, const _cc_length_t b) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a ^ b;
+#else
+    _cc_length_t result;
+    result.low = a.low ^ b.low;
+    result.high = a.high ^ b.high;
     return result;
 #endif
 }
@@ -551,7 +562,17 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     //      top[cap_addr_width] = ~(top[cap_addr_width]);
     //  };
     if (E < (_CC_MAX_EXPONENT - 1) && (top2 - base2) > 1) {
-        top = top ^ ((_cc_length_t)1 << _CC_ADDR_WIDTH);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    top = top ^ ((_cc_length_t)1 << _CC_ADDR_WIDTH);
+#else
+        {
+            _cc_length_t temp;
+            temp.low = 1;
+            temp.high = 0;
+            temp = _cc_N(cc_length_lshift)(temp, _CC_ADDR_WIDTH);
+            top = _cc_N(cc_length_bxor)(top, temp);
+        }
+#endif
     }
 
     _cc_debug_assert((_cc_addr_t)(top >> _CC_ADDR_WIDTH) <= 1); // should be at most 1 bit over

@@ -162,7 +162,7 @@ struct _cc_N(cap) {
 };
 
 static inline bool _cc_N(test_cc_length_equal)(const _cc_length_t a, const _cc_length_t b) {
-#if (CC_LENGTH_TYPE == 0)
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a == b;
 #else
     return a.low == b.low && a.high == b.high;

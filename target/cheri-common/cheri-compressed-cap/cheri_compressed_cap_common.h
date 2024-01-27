@@ -193,13 +193,13 @@ static inline _cc_length_t _cc_N(cc_length_sleft)(const _cc_length_t a, const ui
 #endif
 }
 
-static inline _cc_length_t _cc_N(cc_length_bitor)(const _cc_length_t a, const _cc_length_t b) {
+static inline _cc_length_t _cc_N(cc_length_bitor)(const _cc_length_t a, const uint64_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
-    return a|b;
+    return a | b;
 #else
     _cc_length_t result;
-    result.low = a.low | b.low;
-    result.high = a.high | b.high;
+    result.low = a.low | b;
+    result.high = a.high;
     return result;
 #endif
 }

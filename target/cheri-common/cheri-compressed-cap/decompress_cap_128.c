@@ -63,7 +63,7 @@ static void dump_cap_fields(const cc128_cap_t* result) {
     fprintf(stderr, "Base:        0x%016" PRIx64 "\n", result->cr_base);
     fprintf(stderr, "Offset:      0x%016" PRIx64 "\n", result->_cr_cursor - result->cr_base);
     fprintf(stderr, "Cursor:      0x%016" PRIx64 "\n", result->_cr_cursor);
-#ifdef __LP64__
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     cc128_length_t length = result->_cr_top - result->cr_base;
 #else
     cc128_length_t length;
@@ -71,7 +71,7 @@ static void dump_cap_fields(const cc128_cap_t* result) {
 #endif
     fprintf(stderr, "Length:     0x%" PRIx64 "%016" PRIx64 " %s\n", (uint64_t)(length >> 64), (uint64_t)length,
             length > UINT64_MAX ? " (greater than UINT64_MAX)" : "");
-#ifdef __LP64__
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     cc128_length_t top_full = result->_cr_top;
 #else
     cc128_length_t top_full;

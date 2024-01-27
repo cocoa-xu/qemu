@@ -182,13 +182,12 @@ static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_length_t a, const int 
     return a - b;
 #else
     _cc_length_t result;
-    result.low = a - b;
-
-    if (a < b) {
-        result.high = 1;
-    } else {
-        result.high = 0;
+    result.high = a.high;
+    if (a.low < b) {
+        result.high -= 1;
     }
+    result.low = a.low - b;
+    
     return result;
 #endif
 }

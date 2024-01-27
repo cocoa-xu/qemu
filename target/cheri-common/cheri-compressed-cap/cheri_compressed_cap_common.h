@@ -161,7 +161,7 @@ struct _cc_N(cap) {
 #endif
 };
 
-static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const _cc_length_t b) {
+static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const int b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a + b;
 #else

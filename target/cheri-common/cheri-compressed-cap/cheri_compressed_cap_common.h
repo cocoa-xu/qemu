@@ -169,6 +169,14 @@ static inline bool _cc_N(test_cc_length_equal)(const _cc_length_t a, const _cc_l
 #endif
 }
 
+static inline bool _cc_N(test_cc_length_gt_u64)(const _cc_length_t a, const uint64_t value) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a > value;
+#else
+    return a.high > 0 || a.low > value;
+#endif
+}
+
 static inline bool _cc_N(exactly_equal)(const _cc_cap_t* a, const _cc_cap_t* b) {
     return a->cr_tag == b->cr_tag && a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt;
 }
@@ -217,7 +225,7 @@ static inline uint32_t _cc_N(compute_e)(_cc_addr_t rlength, uint32_t bwidth) {
 
 static inline uint32_t _cc_N(get_exponent)(_cc_length_t length) {
     const uint32_t bwidth = _CC_MANTISSA_WIDTH;
-    if (length > _CC_MAX_ADDR) {
+    if (_cc_N(test_cc_length_gt_u64)(length, _CC_MAX_ADDR)) {
         return _CC_LEN_WIDTH - (bwidth - 1);
     } else {
         return _cc_N(compute_e)((_cc_addr_t)length, bwidth);

@@ -69,8 +69,7 @@ typedef struct {
 typedef struct {
     int64_t low;
     int64_t high;
-};
- cc128_offset_t;
+} cc128_offset_t;
 #endif
 typedef uint64_t cc128_addr_t;
 typedef int64_t cc128_saddr_t;

@@ -575,7 +575,15 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
 #endif
     }
 
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     _cc_debug_assert((_cc_addr_t)(top >> _CC_ADDR_WIDTH) <= 1); // should be at most 1 bit over
+#else
+    {
+        _cc_addr_t top_rshift = (_cc_addr_t)_cc_N(cc_length_rshift)(top, _CC_ADDR_WIDTH).low;
+        _cc_debug_assert(top_rshift <= 1);
+    }
+#endif
+    
     // Check that base <= top for valid inputs
     if (_cc_N(bounds_bits_valid)(bounds)) {
         // Note: base can be > 2^64 for some (untagged) inputs with E near maxE

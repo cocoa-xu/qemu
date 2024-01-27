@@ -209,7 +209,7 @@ static inline _cc_length_t _cc_N(cc_length_lshift)(const _cc_length_t a, const u
 #endif
 }
 
-static inline _cc_length_t _cc_N(cc_length_bitor)(const _cc_length_t a, const uint64_t b) {
+static inline _cc_length_t _cc_N(cc_length_bor)(const _cc_length_t a, const uint64_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a | b;
 #else
@@ -471,7 +471,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     // base : CapLenBits = truncate((a_top + correction_base) @ c.B @ zeros(E), cap_len_width);
     _cc_length_t base = _cc_N(cc_length_add)(a_top, correction_base);
     base = _cc_N(cc_length_lshift)(base, _CC_MANTISSA_WIDTH);
-    base = _cc_N(cc_length_bitor)(base, bounds.B);
+    base = _cc_N(cc_length_bor)(base, bounds.B);
     base = _cc_N(cc_length_lshift)(base, E);
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     base &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
@@ -496,7 +496,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     top.high = 0;
 #endif
     top = _cc_N(cc_length_lshift)(top, _CC_MANTISSA_WIDTH);
-    top = _cc_N(cc_length_bitor)(top, bounds.T);
+    top = _cc_N(cc_length_bor)(top, bounds.T);
     top = _cc_N(cc_length_lshift)(top, E);
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     top &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;

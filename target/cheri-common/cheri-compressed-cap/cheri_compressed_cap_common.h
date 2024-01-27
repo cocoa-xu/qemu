@@ -177,7 +177,7 @@ static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const int b)
 #endif
 }
 
-static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_length_t a, const int b) {
+static inline _cc_length_t _cc_N(cc_length_sub_u64)(const _cc_length_t a, const uint64_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a - b;
 #else
@@ -507,7 +507,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
         temp.low = 1;
         temp.high = 0;
         temp = _cc_N(cc_length_lshift)(temp, _CC_MANTISSA_WIDTH);
-        temp = _cc_N(cc_length_sub)(temp, 1);
+        temp = _cc_N(cc_length_sub_u64)(temp, 1);
         base = _cc_N(cc_length_band)(base, temp);
     }
 #endif
@@ -532,7 +532,7 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
         temp.low = 1;
         temp.high = 0;
         temp = _cc_N(cc_length_lshift)(temp, _CC_LEN_WIDTH);
-        temp = _cc_N(cc_length_sub)(temp, 1);
+        temp = _cc_N(cc_length_sub_u64)(temp, 1);
         top = _cc_N(cc_length_band)(top, temp);
     }
 #endif
@@ -709,7 +709,7 @@ static inline uint32_t _cc_N(compute_ebt)(_cc_addr_t req_base, _cc_length_t req_
      * memory addresses to be wider than requested so it is
      * representable.
      */
-    _cc_length_t req_length65 = req_top - req_base;
+    _cc_length_t req_length65 = _cc_N(cc_length_sub_u64)(req_top, req_base);
     // function setCapBounds(cap, base, top) : (Capability, bits(64), bits(65)) -> (bool, Capability) = {
     //  /* {cap with base=base; length=(bits(64)) length; offset=0} */
     //  let base65 = 0b0 @ base;

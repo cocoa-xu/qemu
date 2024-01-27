@@ -177,7 +177,7 @@ static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const int b)
 #endif
 }
 
-static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_addr_t a, const int b) {
+static inline _cc_length_t _cc_N(cc_length_sub)(const _cc_length_t a, const int b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a - b;
 #else
@@ -204,6 +204,22 @@ static inline _cc_length_t _cc_N(cc_length_lshift)(const _cc_length_t a, const u
     } else {
         result.high = (a.high << shift) | (a.low >> (64 - shift));
         result.low = a.low << shift;
+    }
+    return result;
+#endif
+}
+
+static inline _cc_length_t _cc_N(cc_length_rshift)(const _cc_length_t a, const uint64_t shift) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a >> shift;
+#else
+    _cc_length_t result;
+    if(shift >= 64){
+        result.low = a.high >> (shift - 64);
+        result.high = 0;
+    } else {
+        result.low = (a.low >> shift) | (a.high << (64 - shift));
+        result.high = a.high >> shift;
     }
     return result;
 #endif
@@ -518,9 +534,20 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     //  let base2 : bits(2) = 0b0 @ [base[cap_addr_width - 1]];
     // Note: we ignore the top bit of base here. If we don't we can get cases
     // where setbounds/incoffset/etc. break monotonicity.
-    unsigned base2 = _cc_N(truncate64)(base >> (_CC_ADDR_WIDTH - 1), 1);
+
+    _cc_length_t base_rshift = _cc_N(cc_length_rshift)(base, _CC_ADDR_WIDTH - 1);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    unsigned base2 = _cc_N(truncate64)(base_rshift, 1);
+#else
+    unsigned base2 = _cc_N(truncate64)(base_rshift.low, 1);
+#endif
     //  let top2  : bits(2) = top[cap_addr_width .. cap_addr_width - 1];
-    unsigned top2 = _cc_N(truncate64)(top >> (_CC_ADDR_WIDTH - 1), 2);
+    _cc_length_t top_rshift = _cc_N(cc_length_rshift)(top, _CC_ADDR_WIDTH - 1);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    unsigned top2 = _cc_N(truncate64)(top_rshift, 2);
+#else
+    unsigned top2 = _cc_N(truncate64)(top_rshift.low, 2);
+#endif
     //  if (E < (maxE - 1)) & (unsigned(top2 - base2) > 1) then {
     //      top[cap_addr_width] = ~(top[cap_addr_width]);
     //  };

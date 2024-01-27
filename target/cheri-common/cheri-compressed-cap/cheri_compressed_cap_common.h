@@ -177,6 +177,33 @@ static inline _cc_length_t _cc_N(cc_length_add)(const _cc_addr_t a, const int b)
 #endif
 }
 
+static inline _cc_length_t _cc_N(cc_length_sleft)(const _cc_length_t a, const uint64_t shift) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a << shift;
+#else
+    _cc_length_t result;
+    if(shift >= 64){
+        result.low = 0;
+        result.high = a.low << (shift - 64);
+    } else {
+        result.high = (a.high << shift) | (a.low >> (64 - shift));
+        result.low = a.low << shift;
+    }
+    return result;
+#endif
+}
+
+static inline _cc_length_t _cc_N(cc_length_bitor)(const _cc_length_t a, const _cc_length_t b) {
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
+    return a + b;
+#else
+    _cc_length_t result;
+    result.low = a.low + b.low;
+    result.high = a.high + b.high + (result.low < a.low);
+    return result;
+#endif
+}
+
 static inline bool _cc_N(test_cc_length_equal)(const _cc_length_t a, const _cc_length_t b) {
 #if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     return a == b;
@@ -198,9 +225,9 @@ static inline bool _cc_N(exactly_equal)(const _cc_cap_t* a, const _cc_cap_t* b) 
 }
 
 static inline bool _cc_N(raw_equal)(const _cc_cap_t* a, const _cc_cap_t* b) {
-    return a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt && _cc_N(test_cc_length_equal)(a->_cr_top, b->_cr_top) &&
-           a->cr_base == b->cr_base && a->cr_tag == b->cr_tag && a->cr_bounds_valid == b->cr_bounds_valid &&
-           a->cr_exp == b->cr_exp && a->cr_extra == b->cr_extra;
+    return a->_cr_cursor == b->_cr_cursor && a->cr_pesbt == b->cr_pesbt &&
+           _cc_N(test_cc_length_equal)(a->_cr_top, b->_cr_top) && a->cr_base == b->cr_base && a->cr_tag == b->cr_tag &&
+           a->cr_bounds_valid == b->cr_bounds_valid && a->cr_exp == b->cr_exp && a->cr_extra == b->cr_extra;
 }
 
 /* Returns the index of the most significant bit set in x */
@@ -244,11 +271,7 @@ static inline uint32_t _cc_N(get_exponent)(_cc_length_t length) {
     if (_cc_N(test_cc_length_gt_u64)(length, _CC_MAX_ADDR)) {
         return _CC_LEN_WIDTH - (bwidth - 1);
     } else {
-#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
         return _cc_N(compute_e)((_cc_addr_t)length, bwidth);
-#else
-        return _cc_N(compute_e)((_cc_addr_t)length.low, bwidth);
-#endif
     }
 }
 
@@ -416,10 +439,17 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
 
     // base : CapLenBits = truncate((a_top + correction_base) @ c.B @ zeros(E), cap_len_width);
     _cc_length_t base = _cc_N(cc_length_add)(a_top, correction_base);
-    base <<= _CC_MANTISSA_WIDTH;
+    base = _cc_N(cc_length_sleft)(base,_CC_MANTISSA_WIDTH);
     base |= bounds.B;
-    base <<= E;
+    base = _cc_N(cc_length_sleft)(base,E);
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     base &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
+#else
+    _cc_length_t temp;
+    temp.low=1;
+    temp.high=0;
+    base &= _cc_N(cc_length_sleft)(temp,_CC_MANTISSA_WIDTH) - 1;
+#endif
     _cc_debug_assert((_cc_addr_t)(base >> _CC_ADDR_WIDTH) <= 1); // max 65/33 bits
     // top  : truncate((a_top + correction_top)  @ c.T @ zeros(E), cap_len_width);
     _cc_addr_t tmp = (int64_t)a_top + correction_top;
@@ -430,9 +460,9 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     top.low = tmp;
     top.high = 0;
 #endif
-    top <<= _CC_MANTISSA_WIDTH;
+    top = _cc_N(cc_length_sleft)(top,_CC_MANTISSA_WIDTH);
     top |= bounds.T;
-    top <<= E;
+    top = _cc_N(cc_length_sleft)(top,E);
     top &= ((_cc_length_t)1 << _CC_LEN_WIDTH) - 1;
     _cc_debug_assert((_cc_addr_t)(top >> _CC_ADDR_WIDTH) <= 1); // max 65 bits
 

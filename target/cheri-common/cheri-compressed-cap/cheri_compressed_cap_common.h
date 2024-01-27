@@ -592,8 +592,14 @@ static inline bool _cc_N(compute_base_top)(_cc_bounds_bits bounds, _cc_addr_t cu
     } else {
         // _cc_debug_assert(!tagged && "Should not create invalid tagged capabilities");
     }
+#if (CC_FORMAT_LOWER == 64) || defined(__LP64__)
     *base_out = (_cc_addr_t)base; // strip the (invalid) top bit
     *top_out = top;
+#else
+    *base_out = (_cc_addr_t)base.low; // strip the (invalid) top bit
+    (*top_out).low = top.low;
+    (*top_out).high = top.high;
+#endif
 
     return true;
 }
